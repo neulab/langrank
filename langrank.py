@@ -244,6 +244,7 @@ def rank(test_dataset_features, task="MT", candidates="all", model="best"):
 
 	print("Collecting URIEL distance vectors...")
 	languages = [test_dataset_features["lang"]] + [c[1]["lang"] for c in candidate_list]
+	# TODO: This takes forever...
 	uriel = uriel_distance_vec(languages)
 
 
@@ -256,37 +257,23 @@ def rank(test_dataset_features, task="MT", candidates="all", model="best"):
 		uriel_j = [u[0,i+1] for u in uriel]
 		distance_vector = distance_vec(test_dataset_features, cand_dict, uriel_j)
 		test_inputs.append(distance_vector)
-	# Just for testing, print vectors:
-	'''
-	for c,inp in zip(candidate_list,test_inputs):
-		print(c[0]) #key
-		print(inp)
-		print("*****")
-	'''
-	# TODO:load model
+
+	# load model
 	print("Loading model...")
 	model_dict = map_task_to_models(task) # this loads the dict that will give us the name of the pretrained model
 	model_fname = model_dict[model] # this gives us the filename (needs to be joined, see below)
 	modelfilename = pkg_resources.resource_filename(__name__, os.path.join('pretrained_models', task, model_fname))
-	# TODO: actually load model
 
-	# TODO: rank
+	# rank
 	bst = lgb.Booster(model_file=modelfilename)
 	
 	print("predicting...")
 	predict_scores = bst.predict(test_inputs)
 	print(predict_scores)
 
-	ind = np.argsort(predict_scores)
+	ind = list(np.argsort(predict_scores))
 	print("Ranking:")
-	for j,i in enumerate(ind):
+	for j,i in enumerate(reversed(ind)):
 		print("%d. %s : score=%.2f" % (j, candidate_list[i][0], predict_scores[i]))
 
-
-    #    model.fit(X_train, y_train, group=qgsize_train,
-    #              eval_set=[(X_test, y_test)], eval_group=[qgsize_test], eval_at=3,
-    #              early_stopping_rounds=40, eval_metric="ndcg", verbose=False)
-    #    model.booster_.save_model(os.path.join(output_dir, "lgbm_model_mt_" + lang_set[task_lang_idx] + ".txt"))
-	
-	# TODO: return ranking
 
