@@ -174,11 +174,17 @@ def prepare_new_dataset(lang, dataset_source=None, dataset_target=None, dataset_
 	return features
 
 def uriel_distance_vec(languages):
+	print('...geographic')
 	geographic = l2v.geographic_distance(languages)
+	print('...genetic')
 	genetic = l2v.genetic_distance(languages)
+	print('...inventory')
 	inventory = l2v.inventory_distance(languages)
+	print('...syntactic')
 	syntactic = l2v.syntactic_distance(languages)
+	print('...phonological')
 	phonological = l2v.phonological_distance(languages)
+	print('...featural')
 	featural = l2v.featural_distance(languages)
 	uriel_features = [featural, genetic, geographic, inventory, phonological, syntactic]
 	return uriel_features
@@ -247,7 +253,7 @@ def rank(test_dataset_features, task="MT", candidates="all", model="best"):
 		key = c[0]
 		cand_dict = c[1]
 		candidate_language = key[-3:]
-		uril_j = [u[0,i+1] for u in uriel]
+		uriel_j = [u[0,i+1] for u in uriel]
 		distance_vector = distance_vec(test_dataset_features, cand_dict, uriel_j)
 		test_inputs.append(distance_vector)
 	# Just for testing, print vectors:
