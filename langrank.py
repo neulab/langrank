@@ -13,7 +13,7 @@ MT_DATASETS = {
 MT_MODELS = {
 	"all" : "all.lgbm",
 	"geo" : "geo.lgbm",
-	"best": "lgbm_model_mt_slv.txt",
+	"best": "lgbm_model_mt_all.txt",
 }
 
 POS_DATASETS = {}
@@ -262,7 +262,7 @@ def rank(test_dataset_features, task="MT", candidates="all", model="best"):
 	print("Loading model...")
 	model_dict = map_task_to_models(task) # this loads the dict that will give us the name of the pretrained model
 	model_fname = model_dict[model] # this gives us the filename (needs to be joined, see below)
-	modelfilename = pkg_resources.resource_filename(__name__, os.path.join('pretrained_models', task, model_fname))
+	modelfilename = pkg_resources.resource_filename(__name__, os.path.join('pretrained', task, model_fname))
 
 	# rank
 	bst = lgb.Booster(model_file=modelfilename)
@@ -271,9 +271,29 @@ def rank(test_dataset_features, task="MT", candidates="all", model="best"):
 	predict_scores = bst.predict(test_inputs)
 	print(predict_scores)
 
+	print("Ranking with features:")
+	TOP_K=min(3, len(candidate_list))
+	feature_name = ["Overlap word-level", "Overlap subword-level", "Transfer lang dataset size",
+                    "Target lang dataset size", "Transfer over target size ratio", "Transfer lang TTR",
+                    "Target lang TTR", "Transfer target TTR distance", "GENETIC", "SYNTACTIC", "FEATURAL",
+                    "PHONOLOGICAL", "INVENTORY", "GEOGRAPHIC"]
+	# 0 means we ignore this feature (don't compute single-feature result of it)
+	sort_sign_list = [-1, -1, -1, 0, -1, 0, 0, 1, 1, 1, 1, 1, 1, 1]
+	test_inputs = np.array(test_inputs)
+	for j in range(len(feature_name)):
+		print(feature_name[j])
+		if sort_sign_list[j] != 0:
+			values = test_inputs[:, j] * sort_sign_list[j]
+			best_feat_index = np.argsort(values)
+			for i in range(TOP_K):
+				index = best_feat_index[i]
+				print("%d. %s : score=%.2f" % (i, candidate_list[index][0], test_inputs[index][j]))
+
 	ind = list(np.argsort(predict_scores))
 	print("Ranking:")
 	for j,i in enumerate(reversed(ind)):
 		print("%d. %s : score=%.2f" % (j, candidate_list[i][0], predict_scores[i]))
+
+
 
 
