@@ -2,6 +2,7 @@ import lang2vec.lang2vec as l2v
 import numpy as np
 import pkg_resources
 import os
+import lightgbm as lgb
 
 TASKS = ["MT","DEP","EL","POS"]
 
@@ -12,7 +13,7 @@ MT_DATASETS = {
 MT_MODELS = {
 	"all" : "all.lgbm",
 	"geo" : "geo.lgbm",
-	"best": "all.lgbm",
+	"best": "lgbm_model_mt_slv.txt",
 }
 
 POS_DATASETS = {}
@@ -172,7 +173,19 @@ def prepare_new_dataset(lang, dataset_source=None, dataset_target=None, dataset_
 
 	return features
 
-def distance_vec(test, transfer, candidate_language):
+def uriel_distance_vec(languages):
+	geographic = l2v.geographic_distance(languages)
+	genetic = l2v.genetic_distance(languages)
+	inventory = l2v.inventory_distance(languages)
+	syntactic = l2v.syntactic_distance(languages)
+	phonological = l2v.phonological_distance(languages)
+	featural = l2v.featural_distance(languages)
+	uriel_features = [featural, genetic, geographic, inventory, phonological, syntactic]
+	return uriel_features
+
+
+
+def distance_vec(test, transfer, uriel_features):
 	output = []
 	# Dataset specific 
 	# Dataset Size
@@ -188,18 +201,19 @@ def distance_vec(test, transfer, candidate_language):
 	# Subword overlap
 	subword_overlap = float(len(set(transfer["subword_vocab"]).intersection(set(test["subword_vocab"])))) / (transfer["subword_type_number"] + test["subword_type_number"])
 
-	l1 = test["lang"]
-	l2 = candidate_language
+	#l1 = test["lang"]
+	#l2 = candidate_language
 	# Typological Features
+	'''
 	geographic = l2v.geographic_distance(l1, l2)
 	genetic = l2v.genetic_distance(l1, l2)
 	inventory = l2v.inventory_distance(l1, l2)
 	syntactic = l2v.syntactic_distance(l1, l2)
 	phonological = l2v.phonological_distance(l1, l2)
 	featural = l2v.featural_distance(l1, l2)
-
+	'''
 	data_specific_features = [word_overlap, subword_overlap, transfer_dataset_size, task_data_size, ratio_dataset_size, transfer_ttr, task_ttr, distance_ttr]
-	uriel_features = [featural, genetic, geographic, inventory, phonological, syntactic]
+	# uriel_features = [featural, genetic, geographic, inventory, phonological, syntactic]
 	
 	return np.array(data_specific_features + uriel_features)
 
@@ -215,30 +229,58 @@ def rank(test_dataset_features, task="MT", candidates="all", model="best"):
 	check_task_model(task, model)
 
 	# Get candidates to be compared against
+	print("Preparing candidate list...")
 	if candidates=='all':
 		candidate_list = get_candidates(task)
 	else:
 		# Restricts to a specific set of languages
 		candidate_list = get_candidates(task, candidates)
 
+	print("Collecting URIEL distance vectors...")
+	languages = [test_dataset_features["lang"]] + [c[1]["lang"] for c in candidate_list]
+	uriel = uriel_distance_vec(languages)
 
+
+	print("Collecting distance vectors...")
 	test_inputs = []
-	for c in candidate_list:
+	for i,c in enumerate(candidate_list):
 		key = c[0]
 		cand_dict = c[1]
 		candidate_language = key[-3:]
-		distance_vector = distance_vec(test_dataset_features, cand_dict, candidate_language)
+		uril_j = [u[0,i+1] for u in uriel]
+		distance_vector = distance_vec(test_dataset_features, cand_dict, uriel_j)
 		test_inputs.append(distance_vector)
 	# Just for testing, print vectors:
+	'''
 	for c,inp in zip(candidate_list,test_inputs):
 		print(c[0]) #key
 		print(inp)
 		print("*****")
+	'''
 	# TODO:load model
+	print("Loading model...")
 	model_dict = map_task_to_models(task) # this loads the dict that will give us the name of the pretrained model
 	model_fname = model_dict[model] # this gives us the filename (needs to be joined, see below)
 	modelfilename = pkg_resources.resource_filename(__name__, os.path.join('pretrained_models', task, model_fname))
 	# TODO: actually load model
+
 	# TODO: rank
+	bst = lgb.Booster(model_file=modelfilename)
+	
+	print("predicting...")
+	predict_scores = bst.predict(test_inputs)
+	print(predict_scores)
+
+	ind = np.argsort(predict_scores)
+	print("Ranking:")
+	for j,i in enumerate(ind):
+		print("%d. %s : score=%.2f" % (j, candidate_list[i][0], predict_scores[i]))
+
+
+    #    model.fit(X_train, y_train, group=qgsize_train,
+    #              eval_set=[(X_test, y_test)], eval_group=[qgsize_test], eval_at=3,
+    #              early_stopping_rounds=40, eval_metric="ndcg", verbose=False)
+    #    model.booster_.save_model(os.path.join(output_dir, "lgbm_model_mt_" + lang_set[task_lang_idx] + ".txt"))
+	
 	# TODO: return ranking
 

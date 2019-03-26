@@ -52,7 +52,7 @@ for directory in os.listdir(dataset_dir):
 
 		key = "ted_"+temp[0]
 		features[key] = {}
-		features["lang"] = language
+		features[key]["lang"] = language
 		features[key]["dataset_size"] = lines
 
 		# Get number of types and tokens

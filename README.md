@@ -12,19 +12,21 @@ wget http://www.cs.cmu.edu/~aanastas/files/distances.npz .
 mv distances.npz lang2vec/data/
 python3 setup.py install
 
+# Now clone langrank (future: install it as module)
 cd ../
 git clone https://github.com/antonisa/langrank.git
 wget http://www.cs.cmu.edu/~aanastas/files/indexed.tar.gz .
 tar -xzvf indexed.tar.gz
 ~~~~
 
-Further setup (we will provide the pretrained models to get through wget)
+Further setup (future: provide the pretrained models through wget)
 ~~~~
 mkdir -p pretrained/MT
 # copy pretrained .lgbm file there
 ~~~~
 
-Now, in the ``langrank`` directory you can do:
+See example in ``check.py`` (it should work if you provide a dataset in your computer).
+It follows the example below (ran in the ``langrank`` directory):
 ~~~~
 python3
 >>> import langrank as lr
