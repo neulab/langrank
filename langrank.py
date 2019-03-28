@@ -18,7 +18,9 @@ MT_MODELS = {
 
 POS_DATASETS = {}
 EL_DATASETS = {}
-DEP_DATASETS = {}
+DEP_DATASETS = {
+	"conll" : "conll.npy"
+}
 
 POS_MODELS = {}
 EL_MODELS = {}
@@ -207,17 +209,6 @@ def distance_vec(test, transfer, uriel_features):
 	# Subword overlap
 	subword_overlap = float(len(set(transfer["subword_vocab"]).intersection(set(test["subword_vocab"])))) / (transfer["subword_type_number"] + test["subword_type_number"])
 
-	#l1 = test["lang"]
-	#l2 = candidate_language
-	# Typological Features
-	'''
-	geographic = l2v.geographic_distance(l1, l2)
-	genetic = l2v.genetic_distance(l1, l2)
-	inventory = l2v.inventory_distance(l1, l2)
-	syntactic = l2v.syntactic_distance(l1, l2)
-	phonological = l2v.phonological_distance(l1, l2)
-	featural = l2v.featural_distance(l1, l2)
-	'''
 	data_specific_features = [word_overlap, subword_overlap, transfer_dataset_size, task_data_size, ratio_dataset_size, transfer_ttr, task_ttr, distance_ttr]
 	# uriel_features = [featural, genetic, geographic, inventory, phonological, syntactic]
 	
@@ -248,7 +239,7 @@ def rank(test_dataset_features, task="MT", candidates="all", model="best"):
 	uriel = uriel_distance_vec(languages)
 
 
-	print("Collecting distance vectors...")
+	print("Collecting dataset distance vectors...")
 	test_inputs = []
 	for i,c in enumerate(candidate_list):
 		key = c[0]
@@ -271,7 +262,7 @@ def rank(test_dataset_features, task="MT", candidates="all", model="best"):
 	predict_scores = bst.predict(test_inputs)
 	print(predict_scores)
 
-	print("Ranking with features:")
+	print("Ranking with single features:")
 	TOP_K=min(3, len(candidate_list))
 	feature_name = ["Overlap word-level", "Overlap subword-level", "Transfer lang dataset size",
                     "Target lang dataset size", "Transfer over target size ratio", "Transfer lang TTR",
@@ -281,8 +272,8 @@ def rank(test_dataset_features, task="MT", candidates="all", model="best"):
 	sort_sign_list = [-1, -1, -1, 0, -1, 0, 0, 1, 1, 1, 1, 1, 1, 1]
 	test_inputs = np.array(test_inputs)
 	for j in range(len(feature_name)):
-		print(feature_name[j])
 		if sort_sign_list[j] != 0:
+			print(feature_name[j])
 			values = test_inputs[:, j] * sort_sign_list[j]
 			best_feat_index = np.argsort(values)
 			for i in range(TOP_K):
