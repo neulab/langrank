@@ -42,7 +42,7 @@ python3
 'Vprašanje je torej , kaj je nevidno ?\n'
 >>> 
 >>> # Now prepare the dataset
->>> prepared = lr.prepare_new_dataset('slv', dataset_source=lines)
+>>> prepared = lr.prepare_new_dataset('slv', task="MT", dataset_source=lines)
 NOTE: no subword-level dataset provided, will only extract word-level features.
 >>>
 >>> # And rank the candidates (this could be set to 'all' so that it would rank all available datasets)
@@ -67,7 +67,6 @@ ted_ell
 *****
 ~~~~
 
-TODO(mengzhou): Implement model loading, calling the ranker with the features, returning the ranking
 
 
 

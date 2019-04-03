@@ -6,8 +6,18 @@ import lightgbm as lgb
 
 TASKS = ["MT","DEP","EL","POS"]
 
+
 MT_DATASETS = {
 	"ted" : "ted.npy",
+}
+POS_DATASETS = {
+	"ud" : "ud.npy" 
+}
+EL_DATASETS = {
+	"wiki" : "wiki.npy"
+}
+DEP_DATASETS = {
+	"conll" : "conll.npy"
 }
 
 MT_MODELS = {
@@ -15,13 +25,6 @@ MT_MODELS = {
 	"geo" : "geo.lgbm",
 	"best": "lgbm_model_mt_all.txt",
 }
-
-POS_DATASETS = {}
-EL_DATASETS = {}
-DEP_DATASETS = {
-	"conll" : "conll.npy"
-}
-
 POS_MODELS = {}
 EL_MODELS = {}
 DEP_MODELS = {}
@@ -105,17 +108,9 @@ def get_candidates(task, languages=None):
 	return cands
 
 # prepare new dataset
-def prepare_new_dataset(lang, dataset_source=None, dataset_target=None, dataset_subword_source=None, dataset_subword_target=None):
+def prepare_new_dataset(lang, task="MT", dataset_source=None, dataset_target=None, dataset_subword_source=None, dataset_subword_target=None):
 	features = {}
 	features["lang"] = lang
-	# Get URIEL features -- not needed!
-	#features["geological"] = l2v.get_features(lang, "geo")
-	#features["genetic"] = l2v.get_features(lang, "fam")
-	#features["inventory"] = l2v.get_features(lang, "inventory_average")
-	#features["phonology"] = l2v.get_features(lang, "phonology_average")
-	#features["syntax"] = l2v.get_features(lang, "syntax_average")
-	#features["learned"] = l2v.get_features(lang, "learned")
-
 
 	# Get dataset features
 	if dataset_source is None and dataset_target is None and dataset_subword_source is None and dataset_subword_target is None:
@@ -145,33 +140,41 @@ def prepare_new_dataset(lang, dataset_source=None, dataset_target=None, dataset_
 		raise Exception("dataset_target should either be a filnename (str) or a list of sentences.")
 	'''
 	if source_lines:
-		features["dataset_size"] = len(source_lines)
-		tokens = [w for s in source_lines for w in s.strip().split()]
-		features["token_number"] = len(tokens)
-		types = set(tokens)
-		features["type_number"] = len(types)
-		features["word_vocab"] = types
-		features["type_token_ratio"] = features["type_number"]/float(features["token_number"])
+		if task != "EL":
+			features["dataset_size"] = len(source_lines)
+			tokens = [w for s in source_lines for w in s.strip().split()]
+			features["token_number"] = len(tokens)
+			types = set(tokens)
+			features["type_number"] = len(types)
+			features["word_vocab"] = types
+			features["type_token_ratio"] = features["type_number"]/float(features["token_number"])
+		elif task == "EL":
+			features["dataset_size"] = len(source_lines)
+			tokens = [w for s in source_lines for w in s.strip().split()]
+			types = set(tokens)
+			features["word_vocab"] = types
 
-	if isinstance(dataset_subword_source, str):
-		with open(dataset_subword_source) as inp:
-			source_lines = inp.readlines()
-	elif isinstance(dataset_subword_source, list):
-		source_lines = dataset_subword_source
-	elif dataset_subword_source is None:
-		pass
-		# Use the word-level info, just in case. TODO(this is only for MT)
-		# source_lines = []
-	else:
-		raise Exception("dataset_subword_source should either be a filnename (str) or a list of sentences.")
-	if source_lines:
-		features["dataset_size"] = len(source_lines) # This should be be the same as above
-		tokens = [w for s in source_lines for w in s.strip().split()]
-		features["subword_token_number"] = len(tokens)
-		types = set(tokens)
-		features["subword_type_number"] = len(types)
-		features["subword_vocab"] = types
-		features["type_token_ratio"] = features["subword_type_number"]/float(features["subword_token_number"])
+	if task == "MT":
+		# Only use subword overlap features for the MT task
+		if isinstance(dataset_subword_source, str):
+			with open(dataset_subword_source) as inp:
+				source_lines = inp.readlines()
+		elif isinstance(dataset_subword_source, list):
+			source_lines = dataset_subword_source
+		elif dataset_subword_source is None:
+			pass
+			# Use the word-level info, just in case. TODO(this is only for MT)
+			# source_lines = []
+		else:
+			raise Exception("dataset_subword_source should either be a filnename (str) or a list of sentences.")
+		if source_lines:
+			features["dataset_size"] = len(source_lines) # This should be be the same as above
+			tokens = [w for s in source_lines for w in s.strip().split()]
+			features["subword_token_number"] = len(tokens)
+			types = set(tokens)
+			features["subword_type_number"] = len(types)
+			features["subword_vocab"] = types
+			features["type_token_ratio"] = features["subword_type_number"]/float(features["subword_token_number"])
 
 	return features
 
@@ -193,7 +196,7 @@ def uriel_distance_vec(languages):
 
 
 
-def distance_vec(test, transfer, uriel_features):
+def distance_vec(test, transfer, uriel_features, task):
 	output = []
 	# Dataset specific 
 	# Dataset Size
@@ -201,17 +204,26 @@ def distance_vec(test, transfer, uriel_features):
 	task_data_size = test["dataset_size"]
 	ratio_dataset_size = float(transfer_dataset_size)/task_data_size
 	# TTR
-	transfer_ttr = transfer["type_token_ratio"]
-	task_ttr = test["type_token_ratio"]
-	distance_ttr = (1 - transfer_ttr/task_ttr) ** 2
+	if task != "EL":
+		transfer_ttr = transfer["type_token_ratio"]
+		task_ttr = test["type_token_ratio"]
+		distance_ttr = (1 - transfer_ttr/task_ttr) ** 2
 	# Word overlap
-	word_overlap = float(len(set(transfer["word_vocab"]).intersection(set(test["word_vocab"])))) / (transfer["type_number"] + test["type_number"])
+	if task != "EL":
+		word_overlap = float(len(set(transfer["word_vocab"]).intersection(set(test["word_vocab"])))) / (transfer["type_number"] + test["type_number"])
+	elif task == "EL":
+		word_overlap = float(len(set(transfer["word_vocab"]).intersection(set(test["word_vocab"]))))
 	# Subword overlap
-	subword_overlap = float(len(set(transfer["subword_vocab"]).intersection(set(test["subword_vocab"])))) / (transfer["subword_type_number"] + test["subword_type_number"])
+	if task == "MT":
+		subword_overlap = float(len(set(transfer["subword_vocab"]).intersection(set(test["subword_vocab"])))) / (transfer["subword_type_number"] + test["subword_type_number"])
 
-	data_specific_features = [word_overlap, subword_overlap, transfer_dataset_size, task_data_size, ratio_dataset_size, transfer_ttr, task_ttr, distance_ttr]
-	# uriel_features = [featural, genetic, geographic, inventory, phonological, syntactic]
-	
+	if task == "MT":
+		data_specific_features = [word_overlap, subword_overlap, transfer_dataset_size, task_data_size, ratio_dataset_size, transfer_ttr, task_ttr, distance_ttr]
+	elif task == "POS" or task == "DEP":
+		data_specific_features = [word_overlap, transfer_dataset_size, task_data_size, ratio_dataset_size, transfer_ttr, task_ttr, distance_ttr]
+	elif task == "EL":
+		data_specific_features = [word_overlap, transfer_dataset_size, task_data_size, ratio_dataset_size]
+
 	return np.array(data_specific_features + uriel_features)
 
 
@@ -246,7 +258,7 @@ def rank(test_dataset_features, task="MT", candidates="all", model="best"):
 		cand_dict = c[1]
 		candidate_language = key[-3:]
 		uriel_j = [u[0,i+1] for u in uriel]
-		distance_vector = distance_vec(test_dataset_features, cand_dict, uriel_j)
+		distance_vector = distance_vec(test_dataset_features, cand_dict, uriel_j, task)
 		test_inputs.append(distance_vector)
 
 	# load model
@@ -269,7 +281,13 @@ def rank(test_dataset_features, task="MT", candidates="all", model="best"):
                     "Target lang TTR", "Transfer target TTR distance", "GENETIC", "SYNTACTIC", "FEATURAL",
                     "PHONOLOGICAL", "INVENTORY", "GEOGRAPHIC"]
 	# 0 means we ignore this feature (don't compute single-feature result of it)
-	sort_sign_list = [-1, -1, -1, 0, -1, 0, 0, 1, 1, 1, 1, 1, 1, 1]
+	if task == "MT":
+		sort_sign_list = [-1, -1, -1, 0, -1, 0, 0, 1, 1, 1, 1, 1, 1, 1]
+	elif task == "POS" or task == "DEP":
+		sort_sign_list = [-1, 0, -1, 0, -1, 0, 0, 1, 1, 1, 1, 1, 1, 1]
+	elif task == "EL":
+		sort_sign_list = [-1, 0, -1, 0, -1, 0, 0, 0, 1, 1, 1, 1, 1, 1]
+
 	test_inputs = np.array(test_inputs)
 	for j in range(len(feature_name)):
 		if sort_sign_list[j] != 0:
