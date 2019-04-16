@@ -191,7 +191,7 @@ def uriel_distance_vec(languages):
 	phonological = l2v.phonological_distance(languages)
 	print('...featural')
 	featural = l2v.featural_distance(languages)
-	uriel_features = [featural, genetic, geographic, inventory, phonological, syntactic]
+	uriel_features = [genetic, syntactic, featural, phonological, inventory, geographic]
 	return uriel_features
 
 
@@ -271,15 +271,16 @@ def rank(test_dataset_features, task="MT", candidates="all", model="best"):
 	bst = lgb.Booster(model_file=modelfilename)
 	
 	print("predicting...")
-	predict_scores = bst.predict(test_inputs)
-	print(predict_scores)
+	predict_contribs = bst.predict(test_inputs, pred_contrib=True)
+	predict_scores = predict_contribs.sum(-1)
+	
 
 	print("Ranking with single features:")
 	TOP_K=min(3, len(candidate_list))
 	feature_name = ["Overlap word-level", "Overlap subword-level", "Transfer lang dataset size",
-                    "Target lang dataset size", "Transfer over target size ratio", "Transfer lang TTR",
-                    "Target lang TTR", "Transfer target TTR distance", "GENETIC", "SYNTACTIC", "FEATURAL",
-                    "PHONOLOGICAL", "INVENTORY", "GEOGRAPHIC"]
+					"Target lang dataset size", "Transfer over target size ratio", "Transfer lang TTR",
+					"Target lang TTR", "Transfer target TTR distance", "GENETIC", 
+                    "SYNTACTIC", "FEATURAL", "PHONOLOGICAL", "INVENTORY", "GEOGRAPHIC"] 
 	# 0 means we ignore this feature (don't compute single-feature result of it)
 	if task == "MT":
 		sort_sign_list = [-1, -1, -1, 0, -1, 0, 0, 1, 1, 1, 1, 1, 1, 1]
@@ -302,6 +303,13 @@ def rank(test_dataset_features, task="MT", candidates="all", model="best"):
 	print("Ranking:")
 	for j,i in enumerate(reversed(ind)):
 		print("%d. %s : score=%.2f" % (j, candidate_list[i][0], predict_scores[i]))
+		contrib_scores = predict_contribs[i][:-1]
+		contrib_ind = list(np.argsort(contrib_scores))[::-1]
+		print("1. %s : score=%.2f; 2. %s : score=%.2f; 3. %s : score=%.2f" % 
+			  (feature_name[contrib_ind[0]], contrib_scores[contrib_ind[0]],
+			   feature_name[contrib_ind[1]], contrib_scores[contrib_ind[1]],
+			   feature_name[contrib_ind[2]], contrib_scores[contrib_ind[2]]))
+		
 
 
 
