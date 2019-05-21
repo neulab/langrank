@@ -8,7 +8,7 @@ TASKS = ["MT","DEP","EL","POS"]
 
 
 MT_DATASETS = {
-	"ted" : "ted.npy",
+	"ted" : "ted2.npy", # temporary hack, indexed with the original dataset
 }
 POS_DATASETS = {
 	"ud" : "ud.npy" 
@@ -174,7 +174,7 @@ def prepare_new_dataset(lang, task="MT", dataset_source=None, dataset_target=Non
 			types = set(tokens)
 			features["subword_type_number"] = len(types)
 			features["subword_vocab"] = types
-			features["type_token_ratio"] = features["subword_type_number"]/float(features["subword_token_number"])
+			features["subword_type_token_ratio"] = features["subword_type_number"]/float(features["subword_token_number"])
 
 	return features
 
@@ -309,7 +309,7 @@ def rank(test_dataset_features, task="MT", candidates="all", model="best"):
 			  (feature_name[contrib_ind[0]], contrib_scores[contrib_ind[0]],
 			   feature_name[contrib_ind[1]], contrib_scores[contrib_ind[1]],
 			   feature_name[contrib_ind[2]], contrib_scores[contrib_ind[2]]))
-		
+	return list(reversed(ind))
 
 
 
