@@ -23,6 +23,9 @@ DEP_DATASETS = {
 MT_MODELS = {
 	"all" : "all.lgbm",
 	"geo" : "geo.lgbm",
+	"aze" : "lgbm_model_mt_aze.txt",
+	"fin" : "lgbm_model_mt_fin.txt",
+	"ben" : "lgbm_model_mt_ben.txt",
 	"best": "lgbm_model_mt_all.txt",
 }
 POS_MODELS = {}
@@ -101,8 +104,20 @@ def get_candidates(task, languages=None):
 
 	# Possibly restrict to a subset of candidate languages
 	if languages is not None:
+		add_languages = []
+		sub_languages = []
+		for l in languages:
+			if len(l) == 3:
+				add_languages.append(l)
+			else:
+				# starts with -
+				sub_languages.append(l[1:])
 		# Keep a candidate if it matches the languages
-		new_cands = [c for c in cands if c[0][-3:] in languages]
+		# -aze indicates all except aze
+		if len(add_languages) > 0:
+			new_cands = [c for c in cands if c[0][-3:] in add_languages and c[0][-3] not in sub_languages]
+		else:
+			new_cands = [c for c in cands if c[0][-3:] not in sub_languages]
 		return new_cands
 
 	return cands
@@ -230,7 +245,7 @@ def distance_vec(test, transfer, uriel_features, task):
 
 
 	
-def rank(test_dataset_features, task="MT", candidates="all", model="best"):
+def rank(test_dataset_features, task="MT", candidates="all", model="best", print_topK=3):
 	'''
 	test_dataset_features : the output of prepare_new_dataset(). Basically a dictionary with the necessary dataset features.
 	'''
@@ -280,7 +295,7 @@ def rank(test_dataset_features, task="MT", candidates="all", model="best"):
 	feature_name = ["Overlap word-level", "Overlap subword-level", "Transfer lang dataset size",
 					"Target lang dataset size", "Transfer over target size ratio", "Transfer lang TTR",
 					"Target lang TTR", "Transfer target TTR distance", "GENETIC", 
-                    "SYNTACTIC", "FEATURAL", "PHONOLOGICAL", "INVENTORY", "GEOGRAPHIC"] 
+					"SYNTACTIC", "FEATURAL", "PHONOLOGICAL", "INVENTORY", "GEOGRAPHIC"] 
 	# 0 means we ignore this feature (don't compute single-feature result of it)
 	if task == "MT":
 		sort_sign_list = [-1, -1, -1, 0, -1, 0, 0, 1, 1, 1, 1, 1, 1, 1]
@@ -299,17 +314,17 @@ def rank(test_dataset_features, task="MT", candidates="all", model="best"):
 				index = best_feat_index[i]
 				print("%d. %s : score=%.2f" % (i, candidate_list[index][0], test_inputs[index][j]))
 
-	ind = list(np.argsort(predict_scores))
-	print("Ranking:")
-	for j,i in enumerate(reversed(ind)):
-		print("%d. %s : score=%.2f" % (j, candidate_list[i][0], predict_scores[i]))
+	ind = list(np.argsort(-predict_scores))
+	print("Ranking (top {}):".format(print_topK))
+	for j,i in enumerate(ind[:print_topK]):
+		print("%d. %s : score=%.2f" % (j+1, candidate_list[i][0], predict_scores[i]))
 		contrib_scores = predict_contribs[i][:-1]
 		contrib_ind = list(np.argsort(contrib_scores))[::-1]
-		print("1. %s : score=%.2f; 2. %s : score=%.2f; 3. %s : score=%.2f" % 
+		print("\t1. %s : score=%.2f; \n\t2. %s : score=%.2f; \n\t3. %s : score=%.2f" % 
 			  (feature_name[contrib_ind[0]], contrib_scores[contrib_ind[0]],
 			   feature_name[contrib_ind[1]], contrib_scores[contrib_ind[1]],
 			   feature_name[contrib_ind[2]], contrib_scores[contrib_ind[2]]))
-	return list(reversed(ind))
+	return ind
 
 
 
