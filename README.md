@@ -38,7 +38,12 @@ Further setup (future: provide the pretrained models through wget)
 
 ## Predicting Transfer Languages
 
-See example in ``check.py`` (it should work if you provide a dataset in your computer).
+You can run check.py to predict transfer languages by providing an unsegmented dataset, a segmented dataset
+(using[sentencepiece](https://github.com/google/sentencepiece)) and the language code of your datasets.
+    
+    python3 check.py -o sample-data/ted-train.orig.aze -s sample-data/ted-train.orig.spm8000.aze -l aze
+
+A detailed walk-through of check.py is provided below. See example in ``check.py`` (it should work if you provide a dataset in your computer).
 It follows the example below (ran in the ``langrank`` directory):
 
     python3
