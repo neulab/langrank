@@ -28,7 +28,7 @@ Now clone and install langrank (future: install it as module)
     git clone https://github.com/neulab/langrank.git
     cd langrank
     pip install -r requirements.txt
-    wget http://www.cs.cmu.edu/~aanastas/files/indexed.tar.gz .
+    wget http://phontron.com/data/langrank/indexed.tar.gz .
     tar -xzvf indexed.tar.gz
 
 Further setup (future: provide the pretrained models through wget)
