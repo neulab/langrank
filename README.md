@@ -36,6 +36,8 @@ Further setup (future: provide the pretrained models through wget)
     mkdir -p pretrained/MT
     # copy pretrained .lgbm file there
 
+## Predicting Transfer Languages
+
 See example in ``check.py`` (it should work if you provide a dataset in your computer).
 It follows the example below (ran in the ``langrank`` directory):
 
