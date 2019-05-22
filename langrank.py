@@ -8,7 +8,7 @@ TASKS = ["MT","DEP","EL","POS"]
 
 
 MT_DATASETS = {
-	"ted" : "ted2.npy", # temporary hack, indexed with the original dataset
+	"ted" : "ted.npy",
 }
 POS_DATASETS = {
 	"ud" : "ud.npy" 
