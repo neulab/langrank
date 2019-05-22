@@ -16,16 +16,18 @@ Steps to install:
 
 First install the latest version of lang2vec:
 
-    # Install latest lang2vec
     git clone https://github.com/antonisa/lang2vec.git
     cd lang2vec
-    wget http://www.cs.cmu.edu/~aanastas/files/distances.npz .
-    mv distances.npz lang2vec/data/
+    wget http://www.cs.cmu.edu/~aanastas/files/distances.zip .
+    mv distances.zip lang2vec/data/
     python3 setup.py install
     
-    # Now clone langrank (future: install it as module)
+Now clone and install langrank (future: install it as module)
+
     cd ../
-    git clone https://github.com/antonisa/langrank.git
+    git clone https://github.com/neulab/langrank.git
+    cd langrank
+    pip install -r requirements.txt
     wget http://www.cs.cmu.edu/~aanastas/files/indexed.tar.gz .
     tar -xzvf indexed.tar.gz
 
