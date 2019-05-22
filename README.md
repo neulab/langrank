@@ -37,7 +37,7 @@ Now clone and install langrank (future: install it as module)
 You can run ``langrank_predict.py`` to predict transfer languages by providing an unsegmented dataset, a segmented dataset
 (using [sentencepiece](https://github.com/google/sentencepiece)) and the language code of your datasets.
     
-    python3 langrank_predict.py -o sample-data/ted-train.orig.aze -s sample-data/ted-train.orig.spm8000.aze -l aze
+    python3 langrank_predict.py -o sample-data/ted-train.orig.aze -s sample-data/ted-train.orig.spm8000.aze -l aze -n 3
 
 A detailed walk-through of ``langrank_predict.py`` is provided below. (ran in the ``langrank`` directory):
 
@@ -45,39 +45,34 @@ A detailed walk-through of ``langrank_predict.py`` is provided below. (ran in th
     >>> import langrank as lr
     >>>
     >>> # Load some data
-    >>> with open("sample-data/sl.tok") as inp:
+    >>> with open("sample-data/ell.tok") as inp:
     ...     lines = inp.readlines()
     ... 
     >>> # Just to show that we loaded something
     >>> len(lines) 
-    17022
+    10133 
     >>> lines[0]
-    'Vprašanje je torej , kaj je nevidno ?\n'
+    "o milissi c' e cikala isan adèrfia .\n"
     >>> 
     >>> # Now prepare the dataset
-    >>> prepared = lr.prepare_new_dataset('slv', task="MT", dataset_source=lines)
+    >>> prepared = lr.prepare_new_dataset('ell', task="MT", dataset_source=lines)
     NOTE: no subword-level dataset provided, will only extract word-level features.
     >>>
     >>> # And rank the candidates (this could be set to 'all' so that it would rank all available datasets)
-    >>> lr.rank(prepared, candidates=['ell','ara', 'aze'])
-    ted_ara
-    [2.76440389e-03 3.76911152e-03 2.14111000e+05 1.70220000e+04
-     1.25784867e+01 5.60515862e-02 1.26270588e-01 3.09246574e-01
-     6.77100000e-01 1.00000000e+00 1.00000000e+00 6.69000000e-01
-     2.00000000e-04 6.41000000e-01]
-    *****
-    ted_aze
-    [1.10159341e-02 8.92949634e-03 5.94600000e+03 1.70220000e+04
-     3.49312654e-01 2.21129559e-01 1.26270588e-01 5.64355049e-01
-     6.77100000e-01 1.00000000e+00 1.00000000e+00 6.69000000e-01
-     2.00000000e-04 6.41000000e-01]
-    *****
-    ted_ell
-    [7.39632260e-03 5.29807427e-03 1.34327000e+05 1.70220000e+04
-     7.89137587e+00 4.08389654e-02 1.26270588e-01 4.57754797e-01
-     5.34300000e-01 8.33300000e-01 4.56000000e-02 4.41600000e-01
-     5.92200000e-01 5.38700000e-01]
-    *****
+    >>> lr.rank(prepared, candidates=['tur','ara', 'aze'])
+    Ranking (top 3):
+    1. ted_tur : score=-0.01
+        1. Transfer over target size ratio : score=0.40;
+        2. Transfer lang dataset size : score=0.40;
+        3. Overlap word-level : score=0.18
+    2. ted_ara : score=-0.63
+        1. Transfer over target size ratio : score=0.25;
+        2. Transfer target TTR distance : score=0.17;
+        3. Overlap word-level : score=0.10
+    3. ted_aze : score=-1.67
+        1. Transfer target TTR distance : score=0.12;
+        2. Overlap word-level : score=0.06;
+        3. SYNTACTIC : score=0.06
 
 
 ## Citation/Acknowledgements
