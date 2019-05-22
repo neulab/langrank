@@ -28,22 +28,18 @@ Now clone and install langrank (future: install it as module)
     git clone https://github.com/neulab/langrank.git
     cd langrank
     pip install -r requirements.txt
-    wget http://phontron.com/data/langrank/indexed.tar.gz .
+    wget http://phontron.com/data/langrank/indexed.tar.gz  .
     tar -xzvf indexed.tar.gz
-
-Further setup (future: provide the pretrained models through wget)
-
-    mkdir -p pretrained/MT
-    # copy pretrained .lgbm file there
+    rm indexed.tar.gz
 
 ## Predicting Transfer Languages
 
-You can run ``check.py`` to predict transfer languages by providing an unsegmented dataset, a segmented dataset
+You can run ``langrank_predict.py`` to predict transfer languages by providing an unsegmented dataset, a segmented dataset
 (using [sentencepiece](https://github.com/google/sentencepiece)) and the language code of your datasets.
     
-    python3 check.py -o sample-data/ted-train.orig.aze -s sample-data/ted-train.orig.spm8000.aze -l aze
+    python3 langrank_predict.py -o sample-data/ted-train.orig.aze -s sample-data/ted-train.orig.spm8000.aze -l aze
 
-A detailed walk-through of ``check.py`` is provided below. (ran in the ``langrank`` directory):
+A detailed walk-through of ``langrank_predict.py`` is provided below. (ran in the ``langrank`` directory):
 
     python3
     >>> import langrank as lr
