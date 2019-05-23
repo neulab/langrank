@@ -25,6 +25,6 @@ if params.seg is not None:
 print("read lines")
 prepared = lr.prepare_new_dataset(params.lang, dataset_source=lines, dataset_subword_source=bpelines)
 print("prepared")
-lr.rank(prepared, candidates="-{}".format(params.lang), print_topK=params.num)
+lr.rank(prepared, candidates="all", print_topK=params.num)
 print("ranked")
 
