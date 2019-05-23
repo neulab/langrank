@@ -12,7 +12,7 @@ parser.add_argument('-n', '--num', type=int, default=3, help='print top N')
 params = parser.parse_args()
 
 assert os.path.isfile(params.orig)
-assert os.path.isfile(params.seg) or params.seg is None
+assert (params.seg is None or os.path.isfile(params.seg))
 
 with open(params.orig) as inp:
 	lines = inp.readlines()
@@ -25,6 +25,6 @@ if params.seg is not None:
 print("read lines")
 prepared = lr.prepare_new_dataset(params.lang, dataset_source=lines, dataset_subword_source=bpelines)
 print("prepared")
-lr.rank(prepared, candidates="-{}".format(params.lang), print_topK=params.num)
+lr.rank(prepared, candidates="all", print_topK=params.num)
 print("ranked")
 
