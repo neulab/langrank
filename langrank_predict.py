@@ -9,6 +9,7 @@ parser.add_argument('-s', '--seg', type=str, help='segmented dataset')
 parser.add_argument('-l', '--lang', type=str, required=True, help='language code')
 parser.add_argument('-n', '--num', type=int, default=3, help='print top N')
 parser.add_argument('-c', '--candidates', type=str, default="all", help="candidates of transfer languages, seperated by ;")
+parser.add_argument('-m', '--model', type=str, default="best", help="model to be used for prediction")
 
 params = parser.parse_args()
 
@@ -27,6 +28,6 @@ print("read lines")
 prepared = lr.prepare_new_dataset(params.lang, dataset_source=lines, dataset_subword_source=bpelines)
 print("prepared")
 candidates = "all" if params.candidates == "all" else params.candidates.split(";")
-lr.rank(prepared, candidates=candidates, print_topK=params.num)
+lr.rank(prepared, candidates=candidates, print_topK=params.num, model=params.model)
 print("ranked")
 
