@@ -259,7 +259,7 @@ def prepare_train_file(datasets, langs, rank, segmented_datasets=None, task="MT"
 	num_langs = len(langs)
 	REL_EXP_CUTOFF = num_langs - 1 - 9
 
-	if isinstance(rank, np.ndarray):
+	if not isinstance(rank, np.ndarray):
 		rank = np.array(rank)
 	BLEU_level = -rank + len(langs)
 	rel_BLEU_level = lgbm_rel_exp(BLEU_level, REL_EXP_CUTOFF)
