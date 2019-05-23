@@ -8,7 +8,9 @@ parser.add_argument('-o', '--orig', type=str, required=True, help='unsegmented d
 parser.add_argument('-s', '--seg', type=str, help='segmented dataset')
 parser.add_argument('-l', '--lang', type=str, required=True, help='language code')
 parser.add_argument('-n', '--num', type=int, default=3, help='print top N')
-parser.add_argument('-c', '--candidates', type=str, default="all", help="candidates of transfer languages, seperated by ;")
+parser.add_argument('-c', '--candidates', type=str, default="all",
+										  help="candidates of transfer languages, seperated by ;,"
+											   "use *abc to exclude language abc")
 parser.add_argument('-m', '--model', type=str, default="best", help="model to be used for prediction")
 
 params = parser.parse_args()
