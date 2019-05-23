@@ -14,13 +14,17 @@ Try it out below if you want to figure out which language you should be using to
 
 Steps to install:
 
-First install the latest version of lang2vec:
+First install the latest version (1.1.6) of lang2vec:
 
     git clone https://github.com/antonisa/lang2vec.git
     cd lang2vec
     wget http://www.cs.cmu.edu/~aanastas/files/distances.zip .
     mv distances.zip lang2vec/data/
     python3 setup.py install
+
+or use the test PyPI distribution as follows:
+
+    pip install -i https://test.pypi.org/simple/ lang2vec
     
 Now clone and install langrank (future: install it as module)
 
