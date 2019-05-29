@@ -103,6 +103,11 @@ A detailed walk-through of ``langrank_predict.py`` is provided below. (ran in th
         2. Overlap word-level : score=0.06;
         3. SYNTACTIC : score=0.06
 
+## Data
+
+We have also made public in an easy-to-browse format the [raw data that went into training the model](https://docs.google.com/spreadsheets/d/1yo9Zlnk_oMRshZeUMCHQmztnuC6VOCnP0wsgD7adRYQ/edit?usp=sharing).
+We have released data for MT, EL, POS tagging, and dependency parsing as described in the paper, and also some additional data for zero-shot MT.
+This may be easy to browse if you'd like to see, for example, which languages we empirically found the most useful for transferring into other languages.
 
 ## Citation/Acknowledgements
 
