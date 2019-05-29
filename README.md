@@ -1,7 +1,7 @@
 # LangRank
 by [NeuLab](http://www.cs.cmu.edu/~neulab/) @ [CMU LTI](https://lti.cs.cmu.edu)
 
-<img align="right" src="figures/overview.png">
+<img align="right" width="300px" src="figures/overview.png">
 
 LangRank is a program for **Choosing Transfer Languages for Cross-lingual Transfer Learning**, described by our paper on the topic at ACL 2019.
 Cross-lingual transfer, where a high-resource *transfer* language is used to improve the accuracy of a low-resource *task* language, is now an invaluable tool for improving performance of natural language processing (NLP) on low-resource languages.
