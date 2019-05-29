@@ -1,7 +1,7 @@
 # LangRank
 by [NeuLab](http://www.cs.cmu.edu/~neulab/) @ [CMU LTI](https://lti.cs.cmu.edu)
 
-<img align="right" width="300px" src="figures/overview.png">
+<img align="right" width="400px" src="figures/overview.png">
 
 LangRank is a program for **Choosing Transfer Languages for Cross-lingual Transfer Learning**, described by our paper on the topic at ACL 2019.
 Cross-lingual transfer, where a high-resource *transfer* language is used to improve the accuracy of a low-resource *task* language, is now an invaluable tool for improving performance of natural language processing (NLP) on low-resource languages.
@@ -9,7 +9,30 @@ However, given a particular task language, it is not clear *which* language to t
 Since a large number of features contribute to the success of cross-lingual transfer (including phylogenetic similarity, typological properties, lexical overlap, or size of available data), even the most enlightened experimenter rarely considers all these factors for the particular task at hand.
 
 LangRank is a program to solve this task of automatically selecting optimal transfer languages, treating it as a ranking problem and building models that consider the aforementioned features to perform this prediction.
-In experiments on representative NLP tasks, we have found that LangRank predicts good transfer languages much better than *ad hoc* baselines considering single features in isolation.
+For example, let's say you have a *machine translation* task, and you want to know which languages/datasets you should use to build a system for the low-resource language *Azerbaijani*.
+In this case, you would prepare an example of the type of data you want to translate (in word and sub-word format, details below), and the language code "aze", then run a command like the following (where `-n 3` are the top 3 languages):
+
+    python3 langrank_predict.py -o word-data.aze -s subword-data.aze -l aze -n 3
+
+which would give you results like the following, showing which related datasets to transfer from, and why the model chose those datasets:
+
+    Ranking (top 3):
+    1. ted_tur : score=-0.01
+        1. Transfer over target size ratio : score=0.40;
+        2. Transfer lang dataset size : score=0.40;
+        3. Overlap word-level : score=0.18
+    2. ted_ara : score=-0.63
+        1. Transfer over target size ratio : score=0.25;
+        2. Transfer target TTR distance : score=0.17;
+        3. Overlap word-level : score=0.10
+    3. ted_aze : score=-1.67
+        1. Transfer target TTR distance : score=0.12;
+        2. Overlap word-level : score=0.06;
+        3. SYNTACTIC : score=0.06
+
+<img align="right" width="300px" src="figures/results.png">
+
+In experiments on representative NLP tasks such as machine translation, entity linking, POS tagging, and dependency parsing, we have found that LangRank predicts good transfer languages much better than *ad hoc* baselines considering single features in isolation.
 Try it out below if you want to figure out which language you should be using to solve your low-resource NLP task!
 
 ## Installation
