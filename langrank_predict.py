@@ -11,6 +11,9 @@ parser.add_argument('-n', '--num', type=int, default=3, help='print top N')
 parser.add_argument('-c', '--candidates', type=str, default="all",
 										  help="candidates of transfer languages, seperated by ;,"
 											   "use *abc to exclude language abc")
+parser.add_argument('-t', '--task', type=str, default="MT", choices=["MT", "POS", "EL", "DEP"]
+										  help="The task of interested. Current options support 'MT': machine translation,"
+										  	   "'DEP': Dependency Parsing, 'POS': POS-tagging, and 'EL': Entity Linking")
 parser.add_argument('-m', '--model', type=str, default="best", help="model to be used for prediction")
 
 params = parser.parse_args()
@@ -30,6 +33,7 @@ print("read lines")
 prepared = lr.prepare_new_dataset(params.lang, dataset_source=lines, dataset_subword_source=bpelines)
 print("prepared")
 candidates = "all" if params.candidates == "all" else params.candidates.split(";")
-lr.rank(prepared, candidates=candidates, print_topK=params.num, model=params.model)
+task = params.task
+lr.rank(prepared, task=task, candidates=candidates, print_topK=params.num, model=params.model)
 print("ranked")
 
