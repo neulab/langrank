@@ -9,10 +9,10 @@ However, given a particular task language, it is not clear *which* language to t
 Since a large number of features contribute to the success of cross-lingual transfer (including phylogenetic similarity, typological properties, lexical overlap, or size of available data), even the most enlightened experimenter rarely considers all these factors for the particular task at hand.
 
 LangRank is a program to solve this task of automatically selecting optimal transfer languages, treating it as a ranking problem and building models that consider the aforementioned features to perform this prediction.
-For example, let's say you have a *machine translation* task, and you want to know which languages/datasets you should use to build a system for the low-resource language *Azerbaijani*.
+For example, let's say you have a *machine translation* (MT) task, and you want to know which languages/datasets you should use to build a system for the low-resource language *Azerbaijani*.
 In this case, you would prepare an example of the type of data you want to translate (in word and sub-word format, details below), and the language code "aze", then run a command like the following (where `-n 3` are the top 3 languages):
 
-    python3 langrank_predict.py -o word-data.aze -s subword-data.aze -l aze -n 3
+    python3 langrank_predict.py -o word-data.aze -s subword-data.aze -l aze -n 3 -t MT
 
 which would give you results like the following, showing which related datasets to transfer from, and why the model chose those datasets:
 
@@ -64,9 +64,11 @@ Now clone and install langrank (future: install it as module)
 ## Predicting Transfer Languages
 
 You can run ``langrank_predict.py`` to predict transfer languages by providing an unsegmented dataset, a segmented dataset
-(using [sentencepiece](https://github.com/google/sentencepiece)) and the language code of your datasets.
+(using [sentencepiece](https://github.com/google/sentencepiece)), the language code of your datasets, and the NLP task on hand.
     
-    python3 langrank_predict.py -o sample-data/ted-train.orig.aze -s sample-data/ted-train.orig.spm8000.aze -l aze -n 3
+    python3 langrank_predict.py -o sample-data/ted-train.orig.aze -s sample-data/ted-train.orig.spm8000.aze -l aze -n 3 -t MT
+
+The supported NLP tasks include: machine translation (MT), entity linking (EL), part-of-speech tagging (POS), and dependency parsing (DEP).
 
 A detailed walk-through of ``langrank_predict.py`` is provided below. (ran in the ``langrank`` directory):
 
@@ -88,7 +90,7 @@ A detailed walk-through of ``langrank_predict.py`` is provided below. (ran in th
     NOTE: no subword-level dataset provided, will only extract word-level features.
     >>>
     >>> # And rank the candidates (this could be set to 'all' so that it would rank all available datasets)
-    >>> lr.rank(prepared, candidates=['tur','ara', 'aze'])
+    >>> lr.rank(prepared, task='MT' candidates=['tur','ara', 'aze'])
     Ranking (top 3):
     1. ted_tur : score=-0.01
         1. Transfer over target size ratio : score=0.40;
