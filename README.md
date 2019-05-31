@@ -3,7 +3,7 @@ by [NeuLab](http://www.cs.cmu.edu/~neulab/) @ [CMU LTI](https://lti.cs.cmu.edu)
 
 <img align="right" width="400px" src="figures/overview.png">
 
-LangRank is a program for **Choosing Transfer Languages for Cross-lingual Transfer Learning**, described by our paper on the topic at ACL 2019.
+LangRank is a program for **Choosing Transfer Languages for Cross-lingual Transfer Learning**, described by our [paper](https://arxiv.org/abs/1905.12688) on the topic at ACL 2019.
 Cross-lingual transfer, where a high-resource *transfer* language is used to improve the accuracy of a low-resource *task* language, is now an invaluable tool for improving performance of natural language processing (NLP) on low-resource languages.
 However, given a particular task language, it is not clear *which* language to transfer from, and the standard strategy is to select languages based on *ad hoc* criteria, usually the intuition of the experimenter.
 Since a large number of features contribute to the success of cross-lingual transfer (including phylogenetic similarity, typological properties, lexical overlap, or size of available data), even the most enlightened experimenter rarely considers all these factors for the particular task at hand.
@@ -113,7 +113,7 @@ This may be easy to browse if you'd like to see, for example, which languages we
 
 ## Citation/Acknowledgements
 
-If you use LangRank, we'd appreciate if you cite the [paper](http://arxiv.org/abs/1903.07926) about it!
+If you use LangRank, we'd appreciate if you cite the [paper](https://arxiv.org/abs/1905.12688) about it!
 
     @inproceedings{lin19acl,
         title = {Choosing Transfer Languages for Cross-Lingual Learning},
