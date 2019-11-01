@@ -104,9 +104,9 @@ def get_candidates(task, languages=None):
 		fn = pkg_resources.resource_filename(__name__, os.path.join('indexed', task, datasets_dict[dt]))
 		d = np.load(fn, encoding='latin1', allow_pickle=True).item()
 		cands += [(key,d[key]) for key in d if key != "eng"]
-
+	cands = cands[:2]
 	# Possibly restrict to a subset of candidate languages
-	if languages is not None:
+	if languages is not None and task == "MT":
 		add_languages = []
 		sub_languages = []
 		for l in languages:
@@ -325,6 +325,7 @@ def rank(test_dataset_features, task="MT", candidates="all", model="best", print
 		candidate_list = get_candidates(task, candidates)
 
 	print("Collecting URIEL distance vectors...")
+        
 	languages = [test_dataset_features["lang"]] + [c[1]["lang"] for c in candidate_list]
 	# TODO: This takes forever...
 	uriel = uriel_distance_vec(languages)
@@ -356,17 +357,25 @@ def rank(test_dataset_features, task="MT", candidates="all", model="best", print
 
 	print("Ranking with single features:")
 	TOP_K=min(3, len(candidate_list))
-	feature_name = ["Overlap word-level", "Overlap subword-level", "Transfer lang dataset size",
-					"Target lang dataset size", "Transfer over target size ratio", "Transfer lang TTR",
-					"Target lang TTR", "Transfer target TTR distance", "GENETIC", 
-					"SYNTACTIC", "FEATURAL", "PHONOLOGICAL", "INVENTORY", "GEOGRAPHIC"] 
+	
 	# 0 means we ignore this feature (don't compute single-feature result of it)
 	if task == "MT":
 		sort_sign_list = [-1, -1, -1, 0, -1, 0, 0, 1, 1, 1, 1, 1, 1, 1]
+		feature_name = ["Overlap word-level", "Overlap subword-level", "Transfer lang dataset size",
+					"Target lang dataset size", "Transfer over target size ratio", "Transfer lang TTR",
+					"Target lang TTR", "Transfer target TTR distance", "GENETIC", 
+					"SYNTACTIC", "FEATURAL", "PHONOLOGICAL", "INVENTORY", "GEOGRAPHIC"] 
 	elif task == "POS" or task == "DEP":
-		sort_sign_list = [-1, 0, -1, 0, -1, 0, 0, 1, 1, 1, 1, 1, 1, 1]
+		sort_sign_list = [-1, 0, -1, 0, -1, 0, 0, 1, 1, 1, 1, 1, 1]
+		feature_name = ["Overlap word-level", "Transfer lang dataset size", "Target lang dataset size", 
+						"Transfer over target size ratio", "Transfer lang TTR", "Target lang TTR", 
+						"Transfer target TTR distance", "GENETIC", "SYNTACTIC", "FEATURAL", 
+						"PHONOLOGICAL", "INVENTORY", "GEOGRAPHIC"]
 	elif task == "EL":
-		sort_sign_list = [-1, 0, -1, 0, -1, 0, 0, 0, 1, 1, 1, 1, 1, 1]
+		sort_sign_list = [-1, -1, 0, -1, 1, 1, 1, 1, 1, 1]
+		feature_name = ["Entity overlap", "Transfer lang dataset size", "Target lang dataset size", 
+						"Transfer over target size ratio", "GENETIC", "SYNTACTIC", "FEATURAL", "PHONOLOGICAL", 
+						"INVENTORY", "GEOGRAPHIC"]
 
 	test_inputs = np.array(test_inputs)
 	for j in range(len(feature_name)):
