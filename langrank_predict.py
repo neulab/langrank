@@ -11,8 +11,7 @@ parser.add_argument('-n', '--num', type=int, default=3, help='print top N')
 parser.add_argument('-c', '--candidates', type=str, default="all",
 										  help="candidates of transfer languages, seperated by ;,"
 											   "use *abc to exclude language abc")
-parser.add_argument('-t', '--task', type=str, default="MT", choices=["MT", "POS", "EL", "DEP"]
-										  help="The task of interested. Current options support 'MT': machine translation,"
+parser.add_argument('-t', '--task', type=str, default="MT", choices=["MT", "POS", "EL", "DEP"], help="The task of interested. Current options support 'MT': machine translation,"
 										  	   "'DEP': Dependency Parsing, 'POS': POS-tagging, and 'EL': Entity Linking")
 parser.add_argument('-m', '--model', type=str, default="best", help="model to be used for prediction")
 
