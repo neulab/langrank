@@ -32,8 +32,8 @@ MT_MODELS = {
 POS_MODELS = {
         "best": "lgbm_model_pos_all.txt"
 }
-EL_MODELS = {}
-DEP_MODELS = {}
+EL_MODELS = {"best": "lgbm_model_el_all.txt"}
+DEP_MODELS = {"best": "lgbm_model_dep_all.txt"}
 
 # checks
 def check_task(task):
@@ -104,7 +104,6 @@ def get_candidates(task, languages=None):
 		fn = pkg_resources.resource_filename(__name__, os.path.join('indexed', task, datasets_dict[dt]))
 		d = np.load(fn, encoding='latin1', allow_pickle=True).item()
 		cands += [(key,d[key]) for key in d if key != "eng"]
-	cands = cands[:2]
 	# Possibly restrict to a subset of candidate languages
 	if languages is not None and task == "MT":
 		add_languages = []
